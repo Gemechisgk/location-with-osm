@@ -3,9 +3,9 @@
 
 <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
     <img src="https://leafletjs.com/docs/images/logo.png" alt="Leaflet Logo" style="width: 150px; height: auto; margin: 10px;">
-    <h4 style="margin: 10px;">with</h4>
+   
     <img src="https://www.openstreetmap.org/assets/osm_logo-4b074077c29e100f40ee64f5177886e36b570d4cc3ab10c7b263003d09642e3f.svg" alt="OSM Logo" style="width: 150px; height: auto; margin: 10px;">
-    <h4 style="margin: 10px;">with</h4>
+    
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Google_Earth_icon.svg/180px-Google_Earth_icon.svg.png" alt="Google Satellite" style="width: 150px; height: auto; margin: 10px;">
 </div>
 
