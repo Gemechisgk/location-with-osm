@@ -32,18 +32,18 @@ This project is a web-based mapping application built with **Leaflet.js**. It pr
    ```bash
    git clone https://github.com/Gemechisgk/location-with-osm.git
    cd location-with-osm
-###Usage
-##Plot Shapes: Upload your GeoJSON file to visualize shapes on the map.
-##Identify Location: Click the "Locate Me" button to find your current location.
-##Get Directions: Enter a starting point and destination to see the plotted route with turning points.
-##Change Map Layers: Use the layer control to switch between available map styles.
-###Technologies Used
-##Leaflet.js - A leading open-source JavaScript library for mobile-friendly interactive maps.
-##GeoJSON - A format for encoding a variety of geographic data structures.
-###Contributing
+### Usage
+## Plot Shapes: Upload your GeoJSON file to visualize shapes on the map.
+## Identify Location: Click the "Locate Me" button to find your current location.
+## Get Directions: Enter a starting point and destination to see the plotted route with turning points.
+## Change Map Layers: Use the layer control to switch between available map styles.
+### Technologies Used
+## Leaflet.js - A leading open-source JavaScript library for mobile-friendly interactive maps.
+## GeoJSON - A format for encoding a variety of geographic data structures.
+### Contributing
 Contributions are welcome! 
 
-###License
+### License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 
