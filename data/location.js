@@ -7,7 +7,7 @@ var liveLocationTracker = {
     init: function() {
         this.map = L.map('map').setView([14.0860746, 100.608406], 25); // Set initial zoom level to 15
 
-        // Add Locate Control
+        // Add Location Control
         L.control.locate({
             position: 'topright',
             drawCircle: true,
