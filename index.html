@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMIS Tutorial</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .coordinate {
+            position: absolute;
+            bottom: 10px;
+            right: 50%;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background-color: #000000;
+            color: #fff;
+            border: 1px solid rgb(13, 220, 223);
+            border-radius: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map">
+        <div class="leaflet-control coordinate"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="./data/point.js"></script>
+    <script src="./data/line.js"></script>
+    <script src="./data/polygon.js"></script>
+
+    <script>
+        // Map initialization 
+        var map = L.map('map').setView([9.011, 38.75], 16);
+
+        /*==============================================
+                    TILE LAYER and WMS
+        ================================================*/
+        // OSM layer
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        osm.addTo(map);
+
+        // Other tile layers...
+
+        /*==============================================
+                    MARKER
+        ================================================*/
+        var myIcon = L.icon({
+            iconUrl: 'img/red_marker.png',
+            iconSize: [40, 40],
+        });
+        var singleMarker = L.marker([28.3949, 84.1240], { icon: myIcon, draggable: true });
+        singleMarker.bindPopup('This is Nepal. ' + singleMarker.getLatLng()).openPopup().addTo(map);
+
+        var secondMarker = L.marker([29.3949, 83.1240], { icon: myIcon, draggable: true }).addTo(map);
+
+        /*==============================================
+                GEOJSON
+        ================================================*/
+        var pointData = L.geoJSON(pointJson).addTo(map);
+        var lineData = L.geoJSON(lineJson).addTo(map);
+        var polygonData = L.geoJSON(polygonJson, {
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup(`<b>Name: </b>` + feature.properties.name + `</br> <b>Owner: </b>` + feature.properties.owner + `</br> <b>Registered On: </b>` + feature.properties.registrationDate);
+            },
+            style: {
+                fillColor: 'blue',
+                fillOpacity: 1,
+                color: '#c0c0c0',
+            }
+        }).addTo(map);
+
+        /*==============================================
+                    TRAVEL HISTORY
+        ================================================*/
+        const travelPoints = [
+            [8.9667, 39.6667], // Adama
+            [9.0333, 40.2000], // Intermediate point
+            [9.03, 38.74]      // Addis Ababa
+        ];
+
+        // Fetch the route from OSRM
+        fetch(`https://router.project-osrm.org/route/v1/driving/${travelPoints.map(p => p.join(',')).join(';')}?geometries=geojson`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0].geometry.coordinates;
+                    
+                    // Create a polyline for the travel route
+                    L.polyline(route.map(coord => [coord[1], coord[0]]), { color: 'blue' }).addTo(map);
+                    
+                    // Add markers for each point in the travel history
+                    travelPoints.forEach(point => {
+                        var marker = L.marker(point).addTo(map);
+                        marker.bindPopup(`Location: ${point[0]}, ${point[1]}`);
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching route:', error));
+
+        /*==============================================
+                    LAYER CONTROL
+        ================================================*/
+        var baseMaps = {
+            "OSM": osm,
+            // Other base maps...
+        };
+        var overlayMaps = {
+            "First Marker": singleMarker,
+            "Second Marker": secondMarker,
+            "Point Data": pointData,
+            "Line Data": lineData,
+            "Polygon Data": polygonData,
+            // Add travel route here if needed
+        };
+
+        var layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+
+        /*==============================================
+                    LIVE LOCATION TRACKER
+        ================================================*/
+        var liveLocationTracker = {
+            marker: null,
+            circle: null,
+
+            init: function() {
+                this.startTracking();
+            },
+
+            startTracking: function() {
+                if (!navigator.geolocation) {
+                    console.log("Your browser doesn't support geolocation feature!");
+                } else {
+                    setInterval(() => {
+                        navigator.geolocation.getCurrentPosition(this.getPosition.bind(this));
+                    }, 15000);
+                }
+            },
+
+            getPosition: function(position) {
+                var lat = position.coords.latitude;
+                var long = position.coords.longitude;
+                var accuracy = position.coords.accuracy;
+
+                // Remove existing layers if they exist
+                if (this.marker) {
+                    map.removeLayer(this.marker);
+                }
+
+                if (this.circle) {
+                    map.removeLayer(this.circle);
+                }
+
+                // Create a new marker and circle for the user's location
+                this.marker = L.marker([lat, long]).addTo(map);
+                this.circle = L.circle([lat, long], { radius: accuracy, color: 'blue', fillOpacity: 0.1 }).addTo(map);
+
+                // Add the circle below the polygons
+                polygonData.bringToFront(); // Ensure polygons are on top
+
+                var featureGroup = L.featureGroup([this.marker, this.circle]).addTo(map);
+                map.fitBounds(featureGroup.getBounds());
+
+                console.log("Your coordinate is: Lat: " + lat + " Long: " + long + " Accuracy: " + accuracy);
+            }
+        };
+
+        // Initialize the live location tracker
+        liveLocationTracker.init();
+
+        /*==============================================
+                    CUSTOM LOCATION ICON
+        ================================================*/
+        var locationIcon = L.icon({
+            iconUrl: 'img/black_marker.png', 
+            iconSize: [40, 40],
+        });
+
+        var locationMarker = L.marker([0, 0], { icon: locationIcon }).addTo(map).setOpacity(0); // Initially hidden
+        locationMarker.bindPopup('Click to identify your location');
+
+        // Add event listener to show the marker when clicked
+        locationMarker.on('click', function() {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var lat = position.coords.latitude;
+                var long = position.coords.longitude;
+
+                // Move the location marker to the user's position
+                locationMarker.setLatLng([lat, long]);
+                locationMarker.setOpacity(1); // Show the marker
+                map.setView([lat, long], 16);
+                
+                // Add the location marker to the layer control after it's clicked
+                layerControl.addOverlay(locationMarker, 'Identify Location');
+                
+                console.log("User's location identified: Lat: " + lat + " Long: " + long);
+            }, function() {
+                alert("Unable to retrieve your location.");
+            });
+        });
+        /*==============================================
+                    LEAFLET EVENTS
+        ================================================*/
+        map.on('mouseover', function () {
+            console.log('Your mouse is over the map');
+        });
+
+        map.on('mousemove', function (e) {
+            document.getElementsByClassName('coordinate')[0].innerHTML = 'lat: ' + e.latlng.lat + ' lng: ' + e.latlng.lng;
+            console.log('lat: ' + e.latlng.lat, 'lng: ' + e.latlng.lng);
+        });
+    </script>
+</body>
+
+</html>
