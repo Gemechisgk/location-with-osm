@@ -2,6 +2,7 @@
 # Leaflet.js Map Application
 
 ![Leaflet Logo](https://leafletjs.com/docs/images/logo.png)
+![OSM Logo](https://www.openstreetmap.org/assets/osm_logo-4b074077c29e100f40ee64f5177886e36b570d4cc3ab10c7b263003d09642e3f.svg)
 
 ## Overview
 
