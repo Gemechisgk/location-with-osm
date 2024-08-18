@@ -9,11 +9,7 @@
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Google_Earth_icon.svg/180px-Google_Earth_icon.svg.png" alt="Google Satellite" style="width: 150px; height: auto; margin: 10px;">
 </div>
 
-## Overview
 
-## Overview
-
-## Overview
 ## Overview
 
 This project is a web-based mapping application built with **Leaflet.js**. It provides an interactive map experience with features such as plotting shapes from GeoJSON, live location identification, route plotting to a selected destination, and various map layer options.
