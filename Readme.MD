@@ -51,7 +51,7 @@ This project is a web-based mapping application built with **Leaflet.js**. It pr
 Contributions are welcome! 
 
 ### License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project has no license do whatever you want with it.
 
 
 
