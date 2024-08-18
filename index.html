@@ -26,13 +26,6 @@
             bottom: 10px;
             right: 50%;
         }
-
-        .leaflet-popup-content-wrapper {
-            background-color: #000000;
-            color: #fff;
-            border: 1px solid rgb(13, 220, 223);
-            border-radius: 0px;
-        }
     </style>
 </head>
 
@@ -47,7 +40,6 @@
     <script src="./data/point.js"></script>
     <script src="./data/line.js"></script>
     <script src="./data/polygon.js"></script>
-
     <script>
         // Map initialization 
         var map = L.map('map').setView([9.011, 38.75], 16);
@@ -96,6 +88,30 @@
             attribution: "wms test"
         });
 
+        /*==============================================
+                        MARKER
+        ================================================*/
+        var myIcon = L.icon({
+            iconUrl: 'img/red_marker.png',
+            iconSize: [40, 40],
+        });
+        var singleMarker = L.marker([28.3949, 84.1240], { icon: myIcon, draggable: true });
+        singleMarker.bindPopup('This is Nepal. ' + singleMarker.getLatLng()).openPopup().addTo(map);
+
+        var secondMarker = L.marker([29.3949, 83.1240], { icon: myIcon, draggable: true }).addTo(map);
+
+        // Current marker for user's location
+        var currentMarker = L.marker([9.011, 38.75]).addTo(map);
+
+        // Function to update user's location
+        function updateLocation(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+
+            // Update marker position
+            currentMarker.setLatLng([lat, lng]);
+            map.setView([lat, lng], 16); // Center the map on the user's location
+        }
 /*==============================================
                 GEOJSON
         ================================================*/
@@ -111,18 +127,36 @@
                 color: '#c0c0c0',
             }
         }).addTo(map);
-        /*==============================================
-                    MARKER
-        ================================================*/
-        var myIcon = L.icon({
-            iconUrl: 'img/red_marker.png',
-            iconSize: [40, 40],
-        });
-        var singleMarker = L.marker([28.3949, 84.1240], { icon: myIcon, draggable: true });
-        singleMarker.bindPopup('This is Nepal. ' + singleMarker.getLatLng()).openPopup().addTo(map);
 
-        var secondMarker = L.marker([29.3949, 83.1240], { icon: myIcon, draggable: true }).addTo(map);
-        var currentMarker = L.marker([9.011, 38.75]).addTo(map);
+        // Geolocation setup
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(updateLocation, function() {
+                alert("Unable to retrieve your location.");
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+        /*==============================================
+                    LAYER CONTROL
+        ================================================*/
+        var baseMaps = {
+            "OSM": osm,
+            "Water color map": watercolor,
+            'Dark': dark,
+            'Google Street': googleStreets,
+            "Google Satellite": googleSat,
+        };
+        var overlayMaps = {
+            "First Marker": singleMarker,
+            'Second Marker': secondMarker,
+            'Point Data': pointData,
+            'Line Data': lineData,
+            'Polygon Data': polygonData,
+            'WMS': wms,
+        };
+
+        var layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+
         /*==============================================
                     ROUTING CONTROL
         ================================================*/
@@ -144,26 +178,6 @@
                 routeWhileDragging: true
             }).addTo(map);
         });
-/*==============================================
-                    LAYER CONTROL
-        ================================================*/
-        var baseMaps = {
-            "OSM": osm,
-            "Water color map": watercolor,
-            'Dark': dark,
-            'Google Street': googleStreets,
-            "Google Satellite": googleSat,
-        };
-        var overlayMaps = {
-            "First Marker": singleMarker,
-            'Second Marker': secondMarker,
-            'Point Data': pointData,
-            'Line Data': lineData,
-            'Polygon Data': polygonData,
-            'WMS': wms,
-        };
-
-        var layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
 
         /*==============================================
                     LIVE LOCATION TRACKER
@@ -247,6 +261,7 @@
                 alert("Unable to retrieve your location.");
             });
         });
+
         /*==============================================
                     LEAFLET EVENTS
         ================================================*/
