@@ -5,7 +5,7 @@
 #### with
 ![OSM Logo](https://www.openstreetmap.org/assets/osm_logo-4b074077c29e100f40ee64f5177886e36b570d4cc3ab10c7b263003d09642e3f.svg)
 #### with 
-![Google Satellite](https://w7.pngwing.com/pngs/8/868/png-transparent-google-maps-hd-logo-thumbnail.png)
+![Google Satellite](https://p7.hiclipart.com/preview/155/532/892/google-maps-google-cloud-platform-g-suite-logo-google.jpg)
 ## Overview
 
 This project is a web-based mapping application built with **Leaflet.js**. It provides an interactive map experience with features such as plotting shapes from GeoJSON, live location identification, route plotting to a selected destination, and various map layer options.
