@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LMIS Tutorial</title>
+    <title>OSM with Routing</title>
 
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 
     <style>
         body {
@@ -41,7 +42,8 @@
     </div>
 
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     <script src="./data/point.js"></script>
     <script src="./data/line.js"></script>
     <script src="./data/polygon.js"></script>
@@ -59,21 +61,42 @@
         });
         osm.addTo(map);
 
-        // Other tile layers...
-
-        /*==============================================
-                    MARKER
-        ================================================*/
-        var myIcon = L.icon({
-            iconUrl: 'img/red_marker.png',
-            iconSize: [40, 40],
+        // Water color 
+        var watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            subdomains: 'abcd',
+            minZoom: 1,
+            maxZoom: 16,
+            ext: 'jpg'
         });
-        var singleMarker = L.marker([28.3949, 84.1240], { icon: myIcon, draggable: true });
-        singleMarker.bindPopup('This is Nepal. ' + singleMarker.getLatLng()).openPopup().addTo(map);
 
-        var secondMarker = L.marker([29.3949, 83.1240], { icon: myIcon, draggable: true }).addTo(map);
+        // Dark map 
+        var dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        });
 
-        /*==============================================
+        // Google Street
+        var googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+        });
+
+        // Google Satellite
+        var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+        });
+
+        var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+            layers: 'geoapp:admin',
+            format: 'image/png',
+            transparent: true,
+            attribution: "wms test"
+        });
+
+/*==============================================
                 GEOJSON
         ================================================*/
         var pointData = L.geoJSON(pointJson).addTo(map);
@@ -88,49 +111,56 @@
                 color: '#c0c0c0',
             }
         }).addTo(map);
-
         /*==============================================
-                    TRAVEL HISTORY
+                    MARKER
         ================================================*/
-        const travelPoints = [
-            [8.9667, 39.6667], // Adama
-            [9.0333, 40.2000], // Intermediate point
-            [9.03, 38.74]      // Addis Ababa
-        ];
+        var myIcon = L.icon({
+            iconUrl: 'img/red_marker.png',
+            iconSize: [40, 40],
+        });
+        var singleMarker = L.marker([28.3949, 84.1240], { icon: myIcon, draggable: true });
+        singleMarker.bindPopup('This is Nepal. ' + singleMarker.getLatLng()).openPopup().addTo(map);
 
-        // Fetch the route from OSRM
-        fetch(`https://router.project-osrm.org/route/v1/driving/${travelPoints.map(p => p.join(',')).join(';')}?geometries=geojson`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.routes && data.routes.length > 0) {
-                    const route = data.routes[0].geometry.coordinates;
-                    
-                    // Create a polyline for the travel route
-                    L.polyline(route.map(coord => [coord[1], coord[0]]), { color: 'blue' }).addTo(map);
-                    
-                    // Add markers for each point in the travel history
-                    travelPoints.forEach(point => {
-                        var marker = L.marker(point).addTo(map);
-                        marker.bindPopup(`Location: ${point[0]}, ${point[1]}`);
-                    });
-                }
-            })
-            .catch(error => console.error('Error fetching route:', error));
-
+        var secondMarker = L.marker([29.3949, 83.1240], { icon: myIcon, draggable: true }).addTo(map);
+        var currentMarker = L.marker([9.011, 38.75]).addTo(map);
         /*==============================================
+                    ROUTING CONTROL
+        ================================================*/
+        var routingControl;
+
+        map.on('click', function (e) {
+            // Remove existing routing control if it exists
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            var destinationMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(currentMarker.getLatLng().lat, currentMarker.getLatLng().lng),
+                    L.latLng(e.latlng.lat, e.latlng.lng)
+                ],
+                routeWhileDragging: true
+            }).addTo(map);
+        });
+/*==============================================
                     LAYER CONTROL
         ================================================*/
         var baseMaps = {
             "OSM": osm,
-            // Other base maps...
+            "Water color map": watercolor,
+            'Dark': dark,
+            'Google Street': googleStreets,
+            "Google Satellite": googleSat,
         };
         var overlayMaps = {
             "First Marker": singleMarker,
-            "Second Marker": secondMarker,
-            "Point Data": pointData,
-            "Line Data": lineData,
-            "Polygon Data": polygonData,
-            // Add travel route here if needed
+            'Second Marker': secondMarker,
+            'Point Data': pointData,
+            'Line Data': lineData,
+            'Polygon Data': polygonData,
+            'WMS': wms,
         };
 
         var layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
