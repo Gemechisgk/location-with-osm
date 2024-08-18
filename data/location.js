@@ -7,7 +7,7 @@ var liveLocationTracker = {
     init: function() {
         this.map = L.map('map').setView([14.0860746, 100.608406], 25); // Set initial zoom level to 15
 
-        // Add Locate Control
+        // Add Location Control
         L.control.locate({
             position: 'topright',
             drawCircle: true,
@@ -59,7 +59,6 @@ var liveLocationTracker = {
         var lat = position.coords.latitude;
         var long = position.coords.longitude;
         var accuracy = position.coords.accuracy;
-
         // Remove previous marker and circle if they exist
         if (this.marker) {
             this.map.removeLayer(this.marker);
