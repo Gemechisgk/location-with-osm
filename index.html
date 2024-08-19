@@ -40,6 +40,8 @@
     <script src="./data/point.js"></script>
     <script src="./data/line.js"></script>
     <script src="./data/polygon.js"></script>
+    <script src="./data/travelHistory.js"></script>
+    console.log(travelHistory)
     <script>
         // Map initialization 
         var map = L.map('map').setView([9.011, 38.75], 16);
@@ -261,6 +263,23 @@
                 alert("Unable to retrieve your location.");
             });
         });
+        
+    // var map = L.map('map').setView([9.011, 38.75], 16);
+
+  
+    // Routing using Leaflet Routing Machine
+    var routingControl = L.Routing.control({
+        waypoints: travelHistory.map(location => L.latLng(location.point[0], location.point[1])),
+        createMarker: function(i, waypoint, n) {
+            return L.marker(waypoint.latLng).bindPopup(
+                `<b>Speed:</b> ${travelHistory[i].speed} km/h<br>` +
+                `<b>Fuel:</b> ${travelHistory[i].fuel} liters`
+            );
+        },
+        routeWhileDragging: true
+    }).addTo(map);
+
+
 
         /*==============================================
                     LEAFLET EVENTS

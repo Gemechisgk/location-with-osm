@@ -1,5 +1,4 @@
-
-// Dummy travel history data
+// travelHistory.js
 const travelHistory = [
     {
         point: [8.9667, 39.6667], // Adama
@@ -27,10 +26,3 @@ const travelHistory = [
         fuel: 30 // liters
     }
 ];
-
-// Average speed and fuel consumption
-const averageSpeed = travelHistory.reduce((sum, point) => sum + point.speed, 0) / travelHistory.length;
-const totalFuelConsumption = travelHistory.reduce((sum, point) => sum + point.fuel, 0);
-
-// Export the data
-export { travelHistory, averageSpeed, totalFuelConsumption };
