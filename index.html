@@ -264,14 +264,13 @@
             });
         });
         
-    // var map = L.map('map').setView([9.011, 38.75], 16);
-
-  
     // Routing using Leaflet Routing Machine
     var routingControl = L.Routing.control({
         waypoints: travelHistory.map(location => L.latLng(location.point[0], location.point[1])),
         createMarker: function(i, waypoint, n) {
             return L.marker(waypoint.latLng).bindPopup(
+                `<b>Driver:</b> ${travelHistory[i].driver} <br>` +
+                `<b>Vehicle:</b> ${travelHistory[i].Vehicle} <br>` +
                 `<b>Speed:</b> ${travelHistory[i].speed} km/h<br>` +
                 `<b>Fuel:</b> ${travelHistory[i].fuel} liters`
             );
